@@ -1,7 +1,7 @@
 {
   "name": "mb-foundation-website",
   "version": "1.0.0",
-  "description": "Charity NGO website with an image upload backend",
+  "description": "Charity NGO website with Cloudinary-managed images",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

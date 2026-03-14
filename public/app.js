@@ -3,22 +3,23 @@ let adminContentCache = null;
 async function main() {
   const page = document.body.dataset.page;
   const content = await loadContent();
+  const galleries = content.galleries || {};
 
   applyContentImages(content.images || {});
 
   if (page === "home") {
     renderHistory(content.history || []);
-    setupCarousels(content.carousel || []);
+    setupCarousels(galleries.home || content.carousel || []);
   }
 
   if (page === "about") {
     renderAbout(content.about || {});
-    setupCarousels(content.carousel || []);
+    setupCarousels(galleries.about || content.carousel || []);
   }
 
   if (page === "events") {
     renderEvents(content.events || []);
-    setupCarousels(content.carousel || []);
+    setupCarousels(galleries.events || content.carousel || []);
   }
 
   if (page === "admin") {
@@ -240,6 +241,7 @@ async function setupAdmin() {
   }
 
   await refreshAdminContent();
+  await setupCloudinaryAdmin();
 
   logoutButton?.addEventListener("click", async () => {
     await fetchJson("/api/admin/logout", { method: "POST" });
@@ -247,90 +249,7 @@ async function setupAdmin() {
     window.location.href = "/admin-login.html";
   });
 
-  setupAdminImageUpload();
   setupEventForm();
-  setupPageImageForms();
-}
-
-function setupAdminImageUpload() {
-  const form = document.getElementById("uploadForm");
-  const status = document.getElementById("uploadStatus");
-  if (!form || !status) return;
-
-  const captionInput = form.elements.namedItem("caption");
-  const imageInput = form.elements.namedItem("images");
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const files = Array.from(imageInput.files || []);
-    if (!files.length) {
-      status.textContent = "Choose one or more images before uploading.";
-      return;
-    }
-
-    status.textContent = `Uploading ${files.length} image${files.length === 1 ? "" : "s"}...`;
-
-    try {
-      await fetchJson("/api/admin/carousel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          images: await Promise.all(
-            files.map(async (file) => ({
-              title: humanizeFilename(file.name),
-              caption: captionInput.value.trim() || `${humanizeFilename(file.name)} at Sandeep Special School.`,
-              filename: file.name,
-              dataUrl: await fileToDataUrl(file)
-            }))
-          )
-        })
-      });
-
-      status.textContent = "Images uploaded.";
-      form.reset();
-      await refreshAdminContent();
-    } catch (error) {
-      status.textContent = error.message;
-    }
-  });
-}
-
-function setupPageImageForms() {
-  document.querySelectorAll(".page-image-form").forEach((form) => {
-    const status = form.querySelector("[data-slot-status]");
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const slot = form.dataset.slot;
-      const image = form.elements.namedItem("image").files[0];
-      const alt = form.elements.namedItem("alt").value.trim();
-
-      if (!image) {
-        if (status) status.textContent = "Choose an image before uploading.";
-        return;
-      }
-
-      if (status) status.textContent = "Updating image...";
-
-      try {
-        await fetchJson("/api/admin/site-images", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            slot,
-            filename: image.name,
-            alt,
-            dataUrl: await fileToDataUrl(image)
-          })
-        });
-
-        form.reset();
-        if (status) status.textContent = "Page image updated.";
-        await refreshAdminContent();
-      } catch (error) {
-        if (status) status.textContent = error.message;
-      }
-    });
-  });
 }
 
 function setupEventForm() {
@@ -364,10 +283,108 @@ function setupEventForm() {
 }
 
 async function refreshAdminContent() {
-  adminContentCache = await fetchJson("/api/admin/content");
-  renderPageImages(adminContentCache.images || {});
-  renderAdminCarousel(adminContentCache.carousel || []);
+  const [adminContent, publicContent] = await Promise.all([
+    fetchJson("/api/admin/content"),
+    loadContent()
+  ]);
+
+  adminContentCache = adminContent;
+  renderPageImages(publicContent.images || {});
+  renderAdminGalleries(publicContent.galleries || {});
   renderAdminEvents(adminContentCache.events || []);
+}
+
+async function setupCloudinaryAdmin() {
+  const status = document.getElementById("cloudinaryStatus");
+  const dashboardLink = document.getElementById("cloudinaryDashboardLink");
+  const uploadPreset = document.getElementById("cloudinaryUploadPreset");
+  const cloudName = document.getElementById("cloudinaryCloudName");
+
+  const config = await fetchJson("/api/admin/cloudinary-config").catch(() => null);
+  if (!config) {
+    if (status) status.textContent = "Cloudinary settings are unavailable.";
+    return;
+  }
+
+  if (dashboardLink) {
+    dashboardLink.href = config.dashboardUrl;
+  }
+  if (uploadPreset) {
+    uploadPreset.textContent = config.uploadPreset || "Not set";
+  }
+  if (cloudName) {
+    cloudName.textContent = config.cloudName || "Not set";
+  }
+
+  document.querySelectorAll("[data-cloudinary-tag]").forEach((element) => {
+    const key = element.dataset.cloudinaryTag;
+    element.textContent = config.tags?.[key] || "Not set";
+  });
+
+  const buttons = Array.from(document.querySelectorAll("[data-cloudinary-target]"));
+  if (!config.cloudName || !config.uploadPreset) {
+    if (status) {
+      status.textContent =
+        "Set CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET in Vercel first.";
+    }
+    buttons.forEach((button) => {
+      button.disabled = true;
+    });
+    return;
+  }
+
+  if (!window.cloudinary?.createUploadWidget) {
+    if (status) status.textContent = "Cloudinary uploader did not load.";
+    buttons.forEach((button) => {
+      button.disabled = true;
+    });
+    return;
+  }
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.dataset.cloudinaryTarget;
+      const multiple = button.dataset.multiple === "true";
+      const label = button.dataset.label || target;
+      const widget = window.cloudinary.createUploadWidget(
+        {
+          cloudName: config.cloudName,
+          uploadPreset: config.uploadPreset,
+          sources: ["local", "url", "camera"],
+          resourceType: "image",
+          folder: config.folder,
+          multiple,
+          maxFiles: multiple ? 20 : 1,
+          tags: [config.tags?.[target]].filter(Boolean),
+          clientAllowedFormats: ["jpg", "jpeg", "png", "webp"],
+          showAdvancedOptions: false,
+          singleUploadAutoClose: !multiple
+        },
+        async (error, result) => {
+          if (error) {
+            if (status) status.textContent = error.message || "Upload failed.";
+            return;
+          }
+
+          if (result?.event === "display-changed" && status) {
+            status.textContent = `Uploading to ${label}...`;
+          }
+
+          if (result?.event === "queues-end") {
+            if (status) {
+              status.textContent = "Upload complete. Gallery updates may take up to a minute.";
+            }
+            await refreshAdminContent();
+          }
+        }
+      );
+
+      if (status) {
+        status.textContent = `Opening Cloudinary uploader for ${label}.`;
+      }
+      widget.open();
+    });
+  });
 }
 
 function renderPageImages(images) {
@@ -396,46 +413,48 @@ function renderPageImages(images) {
     .join("");
 }
 
-function renderAdminCarousel(items) {
-  const container = document.getElementById("adminCarouselList");
+function renderAdminGalleries(galleries) {
+  const container = document.getElementById("adminGalleryGroups");
   if (!container) return;
 
-  if (!items.length) {
-    container.innerHTML = `<p class="body-text empty-state">No carousel images uploaded yet.</p>`;
-    return;
-  }
+  const groups = [
+    { key: "home", label: "Home gallery" },
+    { key: "about", label: "About gallery" },
+    { key: "events", label: "Events gallery" }
+  ];
 
-  container.innerHTML = items
-    .map(
-      (item) => `
-        <article class="admin-item-card">
-          <img src="${escapeAttribute(item.image)}" alt="${escapeAttribute(item.alt || item.title)}" />
-          <div class="admin-item-copy">
-            <h3>${escapeHtml(item.title)}</h3>
-            <p>${escapeHtml(item.caption)}</p>
+  container.innerHTML = groups
+    .map((group) => {
+      const items = galleries[group.key] || [];
+      return `
+        <section class="admin-gallery-group">
+          <div class="section-heading">
+            <p class="eyebrow">Live preview</p>
+            <h3>${escapeHtml(group.label)}</h3>
           </div>
-          <button class="button admin-delete-button" type="button" data-delete-image="${escapeAttribute(item.id)}">
-            Remove
-          </button>
-        </article>
-      `
-    )
+          ${
+            items.length
+              ? `<div class="admin-list">
+                  ${items
+                    .map(
+                      (item) => `
+                        <article class="admin-item-card">
+                          <img src="${escapeAttribute(item.image)}" alt="${escapeAttribute(item.alt || item.title)}" />
+                          <div class="admin-item-copy">
+                            <h3>${escapeHtml(item.title)}</h3>
+                            <p>${escapeHtml(item.caption || item.alt || "")}</p>
+                          </div>
+                        </article>
+                      `
+                    )
+                    .join("")}
+                </div>`
+              : `<p class="body-text empty-state">No images are tagged for this gallery yet.</p>`
+          }
+        </section>
+      `;
+    })
     .join("");
-
-  container.querySelectorAll("[data-delete-image]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      button.disabled = true;
-      try {
-        await fetchJson(`/api/admin/carousel?id=${encodeURIComponent(button.dataset.deleteImage)}`, {
-          method: "DELETE"
-        });
-        await refreshAdminContent();
-      } catch (error) {
-        button.disabled = false;
-        alert(error.message);
-      }
-    });
-  });
 }
 
 function renderAdminEvents(items) {
@@ -488,22 +507,6 @@ async function fetchJson(url, options) {
   }
 
   return data;
-}
-
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Unable to read file."));
-    reader.readAsDataURL(file);
-  });
-}
-
-function humanizeFilename(filename) {
-  return String(filename || "")
-    .replace(/\.[a-z0-9]+$/i, "")
-    .replace(/[-_]+/g, " ")
-    .trim();
 }
 
 function escapeHtml(value) {

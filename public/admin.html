@@ -31,10 +31,9 @@
       <main class="page-grid">
         <section class="page-hero compact">
           <p class="eyebrow">Admin dashboard</p>
-          <h1>Manage page images, galleries, and events.</h1>
+          <h1>Manage images and events.</h1>
           <p class="lede">
-            Upload fixed page images such as the home hero and founder portrait, add
-            carousel photos in batches, and keep events up to date.
+            Upload images to Cloudinary by section, then update event listings here.
           </p>
         </section>
 
@@ -52,77 +51,119 @@
           </section>
 
           <section class="admin-two-up admin-three-up">
-            <section class="content-card admin-panel">
+            <section class="content-card admin-panel" id="cloudinaryManager">
               <div class="section-heading">
-                <p class="eyebrow">Page image</p>
-                <h2>Home hero image</h2>
+                <p class="eyebrow">Image workflow</p>
+                <h2>Upload by page section.</h2>
               </div>
-              <form class="upload-form page-image-form" data-slot="homeHero">
-                <label>
-                  Alt text
-                  <input type="text" name="alt" maxlength="120" placeholder="Describe the hero image" />
-                </label>
-                <label>
-                  Image
-                  <input type="file" name="image" accept="image/*" required />
-                </label>
-                <button class="button button-primary" type="submit">Update hero image</button>
-                <p class="status-message" data-slot-status></p>
-              </form>
-            </section>
-
-            <section class="content-card admin-panel">
-              <div class="section-heading">
-                <p class="eyebrow">Page image</p>
-                <h2>Founder portrait</h2>
+              <div class="admin-note">
+                <p class="body-text">
+                  Each button opens Cloudinary with the correct tag already attached.
+                </p>
+                <p class="body-text">
+                  Cloud name: <strong id="cloudinaryCloudName">Checking...</strong><br />
+                  Upload preset: <strong id="cloudinaryUploadPreset">Checking...</strong>
+                </p>
               </div>
-              <form class="upload-form page-image-form" data-slot="founderPortrait">
-                <label>
-                  Alt text
-                  <input type="text" name="alt" maxlength="120" placeholder="Describe the founder portrait" />
-                </label>
-                <label>
-                  Image
-                  <input type="file" name="image" accept="image/*" required />
-                </label>
-                <button class="button button-primary" type="submit">Update portrait</button>
-                <p class="status-message" data-slot-status></p>
-              </form>
+              <div class="tag-grid">
+                <article class="tag-card">
+                  <p class="eyebrow">Single image</p>
+                  <h3>Home hero</h3>
+                  <p class="body-text">The newest image in this tag becomes the homepage hero.</p>
+                  <code data-cloudinary-tag="homeHero">mbf-home-hero</code>
+                  <button
+                    class="button button-primary"
+                    type="button"
+                    data-cloudinary-target="homeHero"
+                    data-label="Home hero"
+                  >
+                    Upload hero image
+                  </button>
+                </article>
+                <article class="tag-card">
+                  <p class="eyebrow">Single image</p>
+                  <h3>Founder portrait</h3>
+                  <p class="body-text">The newest image in this tag becomes the founder portrait.</p>
+                  <code data-cloudinary-tag="founderPortrait">mbf-founder-portrait</code>
+                  <button
+                    class="button button-primary"
+                    type="button"
+                    data-cloudinary-target="founderPortrait"
+                    data-label="Founder portrait"
+                  >
+                    Upload portrait
+                  </button>
+                </article>
+                <article class="tag-card">
+                  <p class="eyebrow">Gallery</p>
+                  <h3>Home carousel</h3>
+                  <p class="body-text">Images in this tag appear in the homepage carousel.</p>
+                  <code data-cloudinary-tag="homeGallery">mbf-home-gallery</code>
+                  <button
+                    class="button button-primary"
+                    type="button"
+                    data-cloudinary-target="homeGallery"
+                    data-label="Home gallery"
+                    data-multiple="true"
+                  >
+                    Upload home gallery
+                  </button>
+                </article>
+                <article class="tag-card">
+                  <p class="eyebrow">Gallery</p>
+                  <h3>About gallery</h3>
+                  <p class="body-text">Images in this tag appear on the About page.</p>
+                  <code data-cloudinary-tag="aboutGallery">mbf-about-gallery</code>
+                  <button
+                    class="button button-primary"
+                    type="button"
+                    data-cloudinary-target="aboutGallery"
+                    data-label="About gallery"
+                    data-multiple="true"
+                  >
+                    Upload about images
+                  </button>
+                </article>
+                <article class="tag-card">
+                  <p class="eyebrow">Gallery</p>
+                  <h3>Events gallery</h3>
+                  <p class="body-text">Images in this tag appear on the Events page.</p>
+                  <code data-cloudinary-tag="eventsGallery">mbf-events-gallery</code>
+                  <button
+                    class="button button-primary"
+                    type="button"
+                    data-cloudinary-target="eventsGallery"
+                    data-label="Events gallery"
+                    data-multiple="true"
+                  >
+                    Upload event images
+                  </button>
+                </article>
+              </div>
+              <p class="status-message" id="cloudinaryStatus"></p>
+              <div class="admin-note">
+                <p class="body-text">
+                  To replace an image later, upload a new one to the same tag.
+                </p>
+                <p class="body-text">
+                  To remove or retag older images, use the
+                  <a class="admin-link" id="cloudinaryDashboardLink" href="https://console.cloudinary.com/console/media_library/home" target="_blank" rel="noreferrer">Cloudinary Media Library</a>.
+                </p>
+              </div>
             </section>
 
             <section class="content-card admin-panel">
               <div class="section-heading">
                 <p class="eyebrow">Current page images</p>
-                <h2>Live previews</h2>
+                <h2>Current single-image slots.</h2>
               </div>
               <div class="admin-list" id="pageImagesList"></div>
-            </section>
-          </section>
-
-          <section class="admin-two-up">
-            <section class="content-card admin-panel">
-              <div class="section-heading">
-                <p class="eyebrow">Gallery upload</p>
-                <h2>Add carousel images in batches.</h2>
-              </div>
-              <form class="upload-form" id="uploadForm">
-                <label>
-                  Caption for this batch
-                  <textarea name="caption" maxlength="180" placeholder="Optional shared caption for all uploaded images"></textarea>
-                </label>
-                <label>
-                  Images
-                  <input type="file" name="images" accept="image/*" multiple required />
-                </label>
-                <button class="button button-primary" type="submit">Upload selected images</button>
-                <p class="status-message" id="uploadStatus"></p>
-              </form>
             </section>
 
             <section class="content-card admin-panel">
               <div class="section-heading">
                 <p class="eyebrow">Events</p>
-                <h2>Publish a new event.</h2>
+                <h2>Add an event.</h2>
               </div>
               <form class="upload-form" id="eventForm">
                 <label>
@@ -150,16 +191,16 @@
           <section class="admin-two-up">
             <section class="content-card admin-panel">
               <div class="section-heading">
-                <p class="eyebrow">Current gallery</p>
-                <h2>Manage carousel images.</h2>
+                <p class="eyebrow">Current galleries</p>
+                <h2>Current gallery images.</h2>
               </div>
-              <div class="admin-list" id="adminCarouselList"></div>
+              <div id="adminGalleryGroups"></div>
             </section>
 
             <section class="content-card admin-panel">
               <div class="section-heading">
                 <p class="eyebrow">Current events</p>
-                <h2>Manage event listings.</h2>
+                <h2>Published events.</h2>
               </div>
               <div class="admin-list" id="adminEventsList"></div>
             </section>
@@ -167,6 +208,7 @@
         </section>
       </main>
     </div>
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js" defer></script>
     <script src="/app.js" defer></script>
   </body>
 </html>

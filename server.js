@@ -8,7 +8,6 @@ const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, "public");
 const DATA_DIR = path.join(ROOT, "data");
-const UPLOAD_DIR = path.join(PUBLIC_DIR, "uploads");
 const CONTENT_FILE = path.join(DATA_DIR, "content.json");
 const SESSION_COOKIE = "mb_admin_session";
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
@@ -118,59 +117,21 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, readContent());
     }
 
-    if (url.pathname === "/api/admin/carousel" && req.method === "POST") {
+    if (url.pathname === "/api/admin/cloudinary-config" && req.method === "GET") {
       requireAdmin(req);
-      const body = await readJsonBody(req);
-      const items = normalizeCarouselUpload(body);
-      const content = readContent();
-      content.carousel = [...items.reverse(), ...content.carousel];
-      writeContent(content);
-      return sendJson(res, 201, { message: "Images uploaded successfully.", items });
-    }
-
-    if (url.pathname === "/api/admin/site-images" && req.method === "POST") {
-      requireAdmin(req);
-      const body = await readJsonBody(req);
-      const slot = String(body.slot || "").trim();
-      if (!DEFAULT_IMAGES[slot]) {
-        throw withStatus("Unknown image slot.", 400);
-      }
-
-      const content = readContent();
-      const previous = content.images?.[slot];
-      const uploaded = saveSingleUploadedImage({
-        title: body.title || DEFAULT_IMAGES[slot].title,
-        alt: body.alt || DEFAULT_IMAGES[slot].alt,
-        filename: body.filename,
-        dataUrl: body.dataUrl
+      return sendJson(res, 200, {
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
+        uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET || "",
+        folder: process.env.CLOUDINARY_UPLOAD_FOLDER || "mbfoundation",
+        dashboardUrl: "https://console.cloudinary.com/console/media_library/home",
+        tags: {
+          homeHero: "mbf-home-hero",
+          founderPortrait: "mbf-founder-portrait",
+          homeGallery: "mbf-home-gallery",
+          aboutGallery: "mbf-about-gallery",
+          eventsGallery: "mbf-events-gallery"
+        }
       });
-
-      content.images[slot] = uploaded;
-      writeContent(content);
-      if (previous) {
-        deleteLocalUpload(previous.image);
-      }
-
-      return sendJson(res, 201, { message: "Page image updated.", slot, image: uploaded });
-    }
-
-    if (url.pathname === "/api/admin/carousel" && req.method === "DELETE") {
-      requireAdmin(req);
-      const id = url.searchParams.get("id");
-      if (!id) {
-        throw withStatus("Image id is required.", 400);
-      }
-
-      const content = readContent();
-      const item = content.carousel.find((entry) => entry.id === id);
-      if (!item) {
-        throw withStatus("Image not found.", 404);
-      }
-
-      content.carousel = content.carousel.filter((entry) => entry.id !== id);
-      deleteLocalUpload(item.image);
-      writeContent(content);
-      return sendJson(res, 200, { message: "Image removed." });
     }
 
     if (url.pathname === "/api/admin/events" && req.method === "POST") {
@@ -220,7 +181,6 @@ server.listen(PORT, () => {
 function ensureStructure() {
   fs.mkdirSync(PUBLIC_DIR, { recursive: true });
   fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
 function ensureContentShape() {
@@ -345,65 +305,6 @@ function readJsonBody(req) {
   });
 }
 
-function normalizeCarouselUpload(body) {
-  const uploads = Array.isArray(body.images) && body.images.length ? body.images : [body];
-  return uploads.map((item, index) =>
-    saveSingleUploadedImage({
-      title: item.title || filenameStem(item.filename) || `Gallery image ${index + 1}`,
-      caption: item.caption || `Uploaded gallery image ${index + 1}.`,
-      alt: item.alt,
-      filename: item.filename,
-      dataUrl: item.dataUrl,
-      includeId: true
-    })
-  );
-}
-
-function saveSingleUploadedImage(body) {
-  const { title, caption, alt, filename, dataUrl, includeId = false } = body || {};
-
-  if (!title || !filename || !dataUrl) {
-    throw withStatus("Title, filename, and image data are required.", 400);
-  }
-
-  const match = String(dataUrl).match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
-  if (!match) {
-    throw withStatus("Only base64-encoded image uploads are supported.", 400);
-  }
-
-  const allowedTypes = {
-    "image/gif": ".gif",
-    "image/jpeg": ".jpg",
-    "image/png": ".png",
-    "image/webp": ".webp"
-  };
-
-  const extension = allowedTypes[match[1]];
-  if (!extension) {
-    throw withStatus("Unsupported image type.", 400);
-  }
-
-  const outputName = `${Date.now()}-${slugify(title)}${extension}`;
-  fs.writeFileSync(path.join(UPLOAD_DIR, outputName), Buffer.from(match[2], "base64"));
-
-  const payload = {
-    title: String(title).trim(),
-    image: `/uploads/${outputName}`,
-    alt: String(alt || `${title} image`).trim(),
-    sourceFile: String(filename).trim()
-  };
-
-  if (caption !== undefined) {
-    payload.caption = String(caption).trim();
-  }
-
-  if (includeId) {
-    payload.id = createId("image");
-  }
-
-  return payload;
-}
-
 function normalizeEvent(body) {
   const name = String(body.name || "").trim();
   const date = String(body.date || "").trim();
@@ -476,17 +377,6 @@ function serializeCookie(name, value, options = {}) {
   return parts.join("; ");
 }
 
-function deleteLocalUpload(imagePath) {
-  if (!imagePath || !imagePath.startsWith("/uploads/")) {
-    return;
-  }
-
-  const outputPath = path.join(PUBLIC_DIR, imagePath);
-  if (outputPath.startsWith(UPLOAD_DIR) && fs.existsSync(outputPath)) {
-    fs.unlinkSync(outputPath);
-  }
-}
-
 function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
   res.end(JSON.stringify(payload));
@@ -496,21 +386,6 @@ function withStatus(message, statusCode) {
   const error = new Error(message);
   error.statusCode = statusCode;
   return error;
-}
-
-function slugify(value) {
-  return String(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60) || "item";
-}
-
-function filenameStem(filename) {
-  return String(filename || "")
-    .replace(/\.[a-z0-9]+$/i, "")
-    .replace(/[-_]+/g, " ")
-    .trim();
 }
 
 function createId(prefix) {
