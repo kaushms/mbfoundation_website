@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Events | M.B. Foundation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body data-page="events">
+    <div class="site-shell">
+      <header class="topbar floating-header">
+        <a class="brand logo-lockup" href="/" aria-label="MB Foundation home">
+          <span class="logo-mark">MB</span>
+          <span>
+            <strong>M.B. Foundation</strong>
+            <small>Sandeep Special School • Sullia, Karnataka</small>
+          </span>
+        </a>
+        <nav class="nav">
+          <a href="/">Home</a>
+          <a href="/about.html">About Us</a>
+          <a href="/events.html" aria-current="page">Events</a>
+        </nav>
+      </header>
+
+      <main class="page-grid">
+        <section class="page-hero compact">
+          <p class="eyebrow">Events</p>
+          <h1>Events that sustain Sandeep Special School and its children.</h1>
+          <p class="lede">
+            Community events, volunteer days, and fundraising efforts help keep therapy,
+            learning, and child-friendly spaces accessible in Sullia.
+          </p>
+        </section>
+
+        <section class="event-grid" id="eventsGrid"></section>
+
+        <section class="gallery-section" aria-labelledby="eventsGalleryHeading">
+          <div class="section-heading section-heading-centered">
+            <p class="eyebrow">Events in focus</p>
+            <h2 id="eventsGalleryHeading">Community gatherings that keep the school moving.</h2>
+          </div>
+          <div class="center-carousel-shell">
+            <button class="carousel-button" data-carousel-prev aria-label="Previous image">
+              &#8592;
+            </button>
+            <div class="carousel center-carousel" data-carousel-root aria-live="polite"></div>
+            <button class="carousel-button" data-carousel-next aria-label="Next image">
+              &#8594;
+            </button>
+          </div>
+          <div class="carousel-meta center-carousel-meta">
+            <div>
+              <p class="eyebrow">Current frame</p>
+              <h2 data-carousel-title>Loading gallery...</h2>
+            </div>
+            <p data-carousel-caption></p>
+          </div>
+          <div class="carousel-dots" data-carousel-dots aria-label="Carousel navigation"></div>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

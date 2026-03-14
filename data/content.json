@@ -1,0 +1,194 @@
+{
+  "history": [
+    {
+      "year": "2001",
+      "title": "The Sadashiv family began sustained work in Sullia",
+      "description": "Their effort focused on creating practical support for children with physical and mental challenges in and around Sullia, Karnataka."
+    },
+    {
+      "year": "Local need",
+      "title": "Families from rubber plantation communities needed closer access to therapy",
+      "description": "Many children of rubber plantation workers lacked reliable access to specialized care, making a child-centered local school deeply necessary."
+    },
+    {
+      "year": "Today",
+      "title": "Sandeep Special School continues with dignified, child-friendly rooms for growth",
+      "description": "The school offers a sanctuary where education, therapy, and everyday encouragement help children discover their maximum potential."
+    }
+  ],
+  "about": {
+    "mission": "To provide a sanctuary in Sullia where children with physical and mental challenges receive education, therapy, dignity, and daily encouragement.",
+    "vision": "A child-friendly community where every child is treated as a gift and given the support needed to move toward a brighter future.",
+    "values": [
+      "Equal opportunities for children from every background",
+      "Safe therapeutic spaces that respect dignity and pace",
+      "Local support for families who cannot easily reach specialized care",
+      "Steady encouragement that helps children enter the mainstream of society"
+    ]
+  },
+  "events": [
+    {
+      "name": "Back-to-School Drive",
+      "date": "August 24, 2026",
+      "location": "Community Learning Center",
+      "description": "A supply distribution day with live art, reading corners, and volunteer-led tutoring signups.",
+      "id": "event-9e85e5136ae0"
+    },
+    {
+      "name": "Health & Hope Camp",
+      "date": "September 14, 2026",
+      "location": "MB Outreach Grounds",
+      "description": "Free screenings, nutrition workshops, and family wellness sessions with local health professionals.",
+      "id": "event-01ca6e5b5b69"
+    },
+    {
+      "name": "Festival of Giving",
+      "date": "November 7, 2026",
+      "location": "City Cultural Hall",
+      "description": "A fundraising evening with performances, youth exhibits, donor stories, and program showcases.",
+      "id": "event-e3a0b67febdd"
+    }
+  ],
+  "carousel": [
+    {
+      "title": "School kit handover",
+      "caption": "Students receiving essentials before the new term begins.",
+      "image": "https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Children holding school kits",
+      "id": "image-77c19c4587e1"
+    },
+    {
+      "title": "Volunteer meal service",
+      "caption": "Weekend volunteers preparing fresh meals for neighborhood families.",
+      "image": "https://images.unsplash.com/photo-1469571486292-b53601020f64?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Volunteers serving meals",
+      "id": "image-db9370013eaf"
+    },
+    {
+      "title": "Community celebration",
+      "caption": "Events are designed to be warm, social, and full of participation.",
+      "image": "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1200&q=80",
+      "alt": "People celebrating at a community event",
+      "id": "image-21b3299e80f8"
+    },
+    {
+      "title": "Learning through play",
+      "caption": "Children building confidence in a playful classroom setting.",
+      "image": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Children learning together",
+      "id": "image-3a1f0d49a001"
+    },
+    {
+      "title": "Reading circle",
+      "caption": "Shared reading time encourages focus, expression, and joy.",
+      "image": "https://images.unsplash.com/photo-1514369118554-e20d93546b30?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Children reading in a group",
+      "id": "image-3a1f0d49a002"
+    },
+    {
+      "title": "Outdoor therapy break",
+      "caption": "Fresh air and movement are part of a calming daily rhythm.",
+      "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Children outdoors",
+      "id": "image-3a1f0d49a003"
+    },
+    {
+      "title": "Creative classroom",
+      "caption": "Art and guided activity make therapy feel welcoming and human.",
+      "image": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Children doing art activities",
+      "id": "image-3a1f0d49a004"
+    },
+    {
+      "title": "Family support day",
+      "caption": "Parents and caregivers stay part of the journey, not outside it.",
+      "image": "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Families gathered together",
+      "id": "image-3a1f0d49a005"
+    },
+    {
+      "title": "Gentle one-to-one care",
+      "caption": "Progress often begins in quiet, patient moments of attention.",
+      "image": "https://images.unsplash.com/photo-1516534775068-ba3e7458af70?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Teacher helping a child",
+      "id": "image-3a1f0d49a006"
+    },
+    {
+      "title": "School community meal",
+      "caption": "Shared meals help the school feel like an extended family.",
+      "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80",
+      "alt": "People eating together",
+      "id": "image-3a1f0d49a007"
+    },
+    {
+      "title": "Music and movement",
+      "caption": "Rhythm-based sessions encourage expression and joyful participation.",
+      "image": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Children engaged in music activity",
+      "id": "image-3a1f0d49a008"
+    },
+    {
+      "title": "Volunteer mentoring",
+      "caption": "Local volunteers bring continuity, warmth, and encouragement.",
+      "image": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Volunteers with children",
+      "id": "image-3a1f0d49a009"
+    },
+    {
+      "title": "Therapy tools in action",
+      "caption": "Specialized care is delivered in a setting that feels safe and calm.",
+      "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Educational therapy materials",
+      "id": "image-3a1f0d49a010"
+    },
+    {
+      "title": "Smiles after class",
+      "caption": "The school day is built around dignity, joy, and steady progress.",
+      "image": "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Happy children after class",
+      "id": "image-3a1f0d49a011"
+    },
+    {
+      "title": "Group learning session",
+      "caption": "Children grow through routine, patience, and a sense of belonging.",
+      "image": "https://images.unsplash.com/photo-1503676382389-4809596d5290?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Students in a group lesson",
+      "id": "image-3a1f0d49a012"
+    },
+    {
+      "title": "Festival preparation",
+      "caption": "Celebrations become opportunities for confidence and participation.",
+      "image": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1200&q=80",
+      "alt": "People preparing for an event",
+      "id": "image-3a1f0d49a013"
+    },
+    {
+      "title": "Quiet support moment",
+      "caption": "Care begins with attention to each child’s individual pace.",
+      "image": "https://images.unsplash.com/photo-1511988617509-a57c8a288659?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Adult supporting child",
+      "id": "image-3a1f0d49a014"
+    },
+    {
+      "title": "Community fundraising",
+      "caption": "Local events help sustain therapy, classrooms, and daily care.",
+      "image": "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Community event crowd",
+      "id": "image-3a1f0d49a015"
+    },
+    {
+      "title": "Playground laughter",
+      "caption": "A joyful childhood is as important as structured support.",
+      "image": "https://images.unsplash.com/photo-1503457574462-bd27054394c1?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Children playing together",
+      "id": "image-3a1f0d49a016"
+    },
+    {
+      "title": "Teacher guidance",
+      "caption": "Patient teaching helps each child build confidence in daily steps.",
+      "image": "https://images.unsplash.com/photo-1529390079861-591de354faf5?auto=format&fit=crop&w=1200&q=80",
+      "alt": "Teacher guiding students",
+      "id": "image-3a1f0d49a017"
+    }
+  ]
+}

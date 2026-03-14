@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | M.B. Foundation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body data-page="admin">
+    <div class="site-shell">
+      <header class="topbar floating-header">
+        <a class="brand logo-lockup" href="/" aria-label="MB Foundation home">
+          <span class="logo-mark">MB</span>
+          <span>
+            <strong>M.B. Foundation</strong>
+            <small>Sandeep Special School • Sullia, Karnataka</small>
+          </span>
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="/about.html">About Us</a>
+          <a href="/events.html">Events</a>
+          <a href="/admin.html" aria-current="page">Admin</a>
+        </nav>
+      </header>
+
+      <main class="page-grid">
+        <section class="page-hero compact">
+          <p class="eyebrow">Admin dashboard</p>
+          <h1>Secure updates for images and events.</h1>
+          <p class="lede">
+            Sign in with admin credentials, upload new gallery images, publish events,
+            and remove old content without editing files directly.
+          </p>
+        </section>
+
+        <section class="content-card admin-auth-card" id="authPanel">
+          <div class="section-heading">
+            <p class="eyebrow">Authentication</p>
+            <h2>Sign in to manage the website.</h2>
+          </div>
+          <form class="admin-login-form" id="loginForm">
+            <label>
+              Username
+              <input type="text" name="username" autocomplete="username" required />
+            </label>
+            <label>
+              Password
+              <input type="password" name="password" autocomplete="current-password" required />
+            </label>
+            <button class="button button-primary" type="submit">Sign in</button>
+            <p class="status-message" id="loginStatus"></p>
+          </form>
+        </section>
+
+        <section class="admin-dashboard hidden" id="dashboardPanel">
+          <section class="content-card admin-toolbar">
+            <div>
+              <p class="eyebrow">Session</p>
+              <h2>Website manager</h2>
+              <p class="body-text" id="sessionInfo">Signed in.</p>
+            </div>
+            <button class="button button-secondary" id="logoutButton" type="button">Sign out</button>
+          </section>
+
+          <section class="admin-two-up">
+            <section class="content-card admin-panel">
+              <div class="section-heading">
+                <p class="eyebrow">Gallery</p>
+                <h2>Upload homepage images.</h2>
+              </div>
+              <form class="upload-form" id="uploadForm">
+                <label>
+                  Title
+                  <input type="text" name="title" required maxlength="80" />
+                </label>
+                <label>
+                  Caption
+                  <textarea name="caption" required maxlength="180"></textarea>
+                </label>
+                <label>
+                  Image
+                  <input type="file" name="image" accept="image/*" required />
+                </label>
+                <button class="button button-primary" type="submit">Upload image</button>
+                <p class="status-message" id="uploadStatus"></p>
+              </form>
+
+              <div class="preview-panel">
+                <p class="eyebrow">Preview</p>
+                <div class="preview-card">
+                  <img id="previewImage" alt="Upload preview" />
+                  <div>
+                    <h3 id="previewTitle">Your image preview will appear here.</h3>
+                    <p id="previewCaption">Add a title, caption, and image to prepare the upload.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="content-card admin-panel">
+              <div class="section-heading">
+                <p class="eyebrow">Events</p>
+                <h2>Publish a new event.</h2>
+              </div>
+              <form class="upload-form" id="eventForm">
+                <label>
+                  Event name
+                  <input type="text" name="name" required maxlength="90" />
+                </label>
+                <label>
+                  Date
+                  <input type="text" name="date" required maxlength="60" placeholder="September 14, 2026" />
+                </label>
+                <label>
+                  Location
+                  <input type="text" name="location" required maxlength="90" />
+                </label>
+                <label>
+                  Description
+                  <textarea name="description" required maxlength="240"></textarea>
+                </label>
+                <button class="button button-primary" type="submit">Publish event</button>
+                <p class="status-message" id="eventStatus"></p>
+              </form>
+            </section>
+          </section>
+
+          <section class="admin-two-up">
+            <section class="content-card admin-panel">
+              <div class="section-heading">
+                <p class="eyebrow">Current gallery</p>
+                <h2>Manage carousel images.</h2>
+              </div>
+              <div class="admin-list" id="adminCarouselList"></div>
+            </section>
+
+            <section class="content-card admin-panel">
+              <div class="section-heading">
+                <p class="eyebrow">Current events</p>
+                <h2>Manage event listings.</h2>
+              </div>
+              <div class="admin-list" id="adminEventsList"></div>
+            </section>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
