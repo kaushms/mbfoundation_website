@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login | M.B. Foundation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body data-page="admin-login">
+    <div class="site-shell">
+      <main class="page-grid admin-login-screen">
+        <section class="page-hero compact admin-login-hero">
+          <p class="eyebrow">Admin access</p>
+          <h1>Sign in to manage images and events.</h1>
+          <p class="lede">
+            Use your administrator credentials to update the home hero image, founder
+            portrait, gallery photos, and event information.
+          </p>
+        </section>
+
+        <section class="content-card admin-auth-card" id="authPanel">
+          <div class="section-heading">
+            <p class="eyebrow">Authentication</p>
+            <h2>Enter your admin credentials.</h2>
+          </div>
+          <form class="admin-login-form" id="loginForm">
+            <label>
+              Username
+              <input type="text" name="username" autocomplete="username" required />
+            </label>
+            <label>
+              Password
+              <input type="password" name="password" autocomplete="current-password" required />
+            </label>
+            <button class="button button-primary" type="submit">Sign in</button>
+            <p class="status-message" id="loginStatus"></p>
+          </form>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

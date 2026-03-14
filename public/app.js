@@ -4,6 +4,8 @@ async function main() {
   const page = document.body.dataset.page;
   const content = await loadContent();
 
+  applyContentImages(content.images || {});
+
   if (page === "home") {
     renderHistory(content.history || []);
     setupCarousels(content.carousel || []);
@@ -21,6 +23,10 @@ async function main() {
 
   if (page === "admin") {
     await setupAdmin();
+  }
+
+  if (page === "admin-login") {
+    await setupAdminLogin();
   }
 }
 
@@ -171,121 +177,159 @@ function renderEvents(events) {
     .join("");
 }
 
-async function setupAdmin() {
-  const authPanel = document.getElementById("authPanel");
-  const dashboardPanel = document.getElementById("dashboardPanel");
-  const loginForm = document.getElementById("loginForm");
-  const loginStatus = document.getElementById("loginStatus");
-  const sessionInfo = document.getElementById("sessionInfo");
-  const logoutButton = document.getElementById("logoutButton");
+function applyContentImages(images) {
+  document.querySelectorAll("[data-image-slot]").forEach((element) => {
+    const slot = element.dataset.imageSlot;
+    const image = images[slot];
+    if (!image) return;
 
+    if (image.image) {
+      element.src = image.image;
+    }
+
+    if (image.alt) {
+      element.alt = image.alt;
+    }
+  });
+}
+
+async function setupAdminLogin() {
   const session = await fetchJson("/api/admin/session");
-  setAdminVisibility(Boolean(session.authenticated));
-
-  if (session.authenticated && sessionInfo) {
-    sessionInfo.textContent = `Signed in as ${session.username}.`;
-    await refreshAdminContent();
+  if (session.authenticated) {
+    window.location.href = "/admin.html";
+    return;
   }
 
-  loginForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    loginStatus.textContent = "Signing in...";
+  const form = document.getElementById("loginForm");
+  const status = document.getElementById("loginStatus");
+  if (!form || !status) return;
 
-    const username = loginForm.elements.namedItem("username").value.trim();
-    const password = loginForm.elements.namedItem("password").value;
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    status.textContent = "Signing in...";
 
     try {
       await fetchJson("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({
+          username: form.elements.namedItem("username").value.trim(),
+          password: form.elements.namedItem("password").value
+        })
       });
 
-      loginForm.reset();
-      loginStatus.textContent = "";
-      if (sessionInfo) sessionInfo.textContent = `Signed in as ${username}.`;
-      setAdminVisibility(true);
-      await refreshAdminContent();
+      window.location.href = "/admin.html";
     } catch (error) {
-      loginStatus.textContent = error.message;
+      status.textContent = error.message;
     }
   });
+}
+
+async function setupAdmin() {
+  const sessionInfo = document.getElementById("sessionInfo");
+  const logoutButton = document.getElementById("logoutButton");
+
+  const session = await fetchJson("/api/admin/session");
+  if (!session.authenticated) {
+    window.location.href = "/admin-login.html";
+    return;
+  }
+
+  if (sessionInfo) {
+    sessionInfo.textContent = `Signed in as ${session.username}.`;
+  }
+
+  await refreshAdminContent();
 
   logoutButton?.addEventListener("click", async () => {
     await fetchJson("/api/admin/logout", { method: "POST" });
     adminContentCache = null;
-    setAdminVisibility(false);
-    if (loginStatus) {
-      loginStatus.textContent = "Signed out.";
-    }
+    window.location.href = "/admin-login.html";
   });
 
   setupAdminImageUpload();
   setupEventForm();
-
-  function setAdminVisibility(isVisible) {
-    authPanel?.classList.toggle("hidden", isVisible);
-    dashboardPanel?.classList.toggle("hidden", !isVisible);
-  }
+  setupPageImageForms();
 }
 
 function setupAdminImageUpload() {
   const form = document.getElementById("uploadForm");
   const status = document.getElementById("uploadStatus");
-  const previewImage = document.getElementById("previewImage");
-  const previewTitle = document.getElementById("previewTitle");
-  const previewCaption = document.getElementById("previewCaption");
-  if (!form || !status || !previewImage || !previewTitle || !previewCaption) return;
+  if (!form || !status) return;
 
-  const titleInput = form.elements.namedItem("title");
   const captionInput = form.elements.namedItem("caption");
-  const imageInput = form.elements.namedItem("image");
-
-  const syncPreviewText = () => {
-    previewTitle.textContent = titleInput.value || "Your image preview will appear here.";
-    previewCaption.textContent =
-      captionInput.value || "Add a title, caption, and image to prepare the upload.";
-  };
-
-  titleInput.addEventListener("input", syncPreviewText);
-  captionInput.addEventListener("input", syncPreviewText);
-  imageInput.addEventListener("change", async () => {
-    const file = imageInput.files[0];
-    if (!file) return;
-    previewImage.src = await fileToDataUrl(file);
-    syncPreviewText();
-  });
+  const imageInput = form.elements.namedItem("images");
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const file = imageInput.files[0];
-    if (!file) {
-      status.textContent = "Choose an image before uploading.";
+    const files = Array.from(imageInput.files || []);
+    if (!files.length) {
+      status.textContent = "Choose one or more images before uploading.";
       return;
     }
 
-    status.textContent = "Uploading image...";
+    status.textContent = `Uploading ${files.length} image${files.length === 1 ? "" : "s"}...`;
 
     try {
       await fetchJson("/api/admin/carousel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: titleInput.value.trim(),
-          caption: captionInput.value.trim(),
-          filename: file.name,
-          dataUrl: await fileToDataUrl(file)
+          images: await Promise.all(
+            files.map(async (file) => ({
+              title: humanizeFilename(file.name),
+              caption: captionInput.value.trim() || `${humanizeFilename(file.name)} at Sandeep Special School.`,
+              filename: file.name,
+              dataUrl: await fileToDataUrl(file)
+            }))
+          )
         })
       });
 
-      status.textContent = "Image uploaded.";
+      status.textContent = "Images uploaded.";
       form.reset();
-      previewImage.removeAttribute("src");
-      syncPreviewText();
       await refreshAdminContent();
     } catch (error) {
       status.textContent = error.message;
     }
+  });
+}
+
+function setupPageImageForms() {
+  document.querySelectorAll(".page-image-form").forEach((form) => {
+    const status = form.querySelector("[data-slot-status]");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const slot = form.dataset.slot;
+      const image = form.elements.namedItem("image").files[0];
+      const alt = form.elements.namedItem("alt").value.trim();
+
+      if (!image) {
+        if (status) status.textContent = "Choose an image before uploading.";
+        return;
+      }
+
+      if (status) status.textContent = "Updating image...";
+
+      try {
+        await fetchJson("/api/admin/site-images", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            slot,
+            filename: image.name,
+            alt,
+            dataUrl: await fileToDataUrl(image)
+          })
+        });
+
+        form.reset();
+        if (status) status.textContent = "Page image updated.";
+        await refreshAdminContent();
+      } catch (error) {
+        if (status) status.textContent = error.message;
+      }
+    });
   });
 }
 
@@ -321,8 +365,35 @@ function setupEventForm() {
 
 async function refreshAdminContent() {
   adminContentCache = await fetchJson("/api/admin/content");
+  renderPageImages(adminContentCache.images || {});
   renderAdminCarousel(adminContentCache.carousel || []);
   renderAdminEvents(adminContentCache.events || []);
+}
+
+function renderPageImages(images) {
+  const container = document.getElementById("pageImagesList");
+  if (!container) return;
+
+  const slots = [
+    { key: "homeHero", label: "Home hero image" },
+    { key: "founderPortrait", label: "Founder portrait" }
+  ];
+
+  container.innerHTML = slots
+    .map((slot) => {
+      const item = images[slot.key];
+      if (!item) return "";
+      return `
+        <article class="admin-item-card">
+          <img src="${escapeAttribute(item.image)}" alt="${escapeAttribute(item.alt || slot.label)}" />
+          <div class="admin-item-copy">
+            <h3>${escapeHtml(slot.label)}</h3>
+            <p>${escapeHtml(item.alt || "")}</p>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
 }
 
 function renderAdminCarousel(items) {
@@ -426,6 +497,13 @@ function fileToDataUrl(file) {
     reader.onerror = () => reject(new Error("Unable to read file."));
     reader.readAsDataURL(file);
   });
+}
+
+function humanizeFilename(filename) {
+  return String(filename || "")
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/[-_]+/g, " ")
+    .trim();
 }
 
 function escapeHtml(value) {

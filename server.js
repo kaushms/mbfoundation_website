@@ -30,6 +30,19 @@ const MIME_TYPES = {
   ".webp": "image/webp"
 };
 
+const DEFAULT_IMAGES = {
+  homeHero: {
+    title: "Sandeep School Hero",
+    image: "https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=1200&q=80",
+    alt: "Children learning together at Sandeep Special School"
+  },
+  founderPortrait: {
+    title: "Sadashiv Family Portrait",
+    image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=900&q=80",
+    alt: "Portrait representing the Sadashiv family"
+  }
+};
+
 ensureStructure();
 ensureContentShape();
 
@@ -108,11 +121,37 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/api/admin/carousel" && req.method === "POST") {
       requireAdmin(req);
       const body = await readJsonBody(req);
-      const item = saveUploadedImage(body);
+      const items = normalizeCarouselUpload(body);
       const content = readContent();
-      content.carousel.unshift(item);
+      content.carousel = [...items.reverse(), ...content.carousel];
       writeContent(content);
-      return sendJson(res, 201, { message: "Image uploaded successfully.", item });
+      return sendJson(res, 201, { message: "Images uploaded successfully.", items });
+    }
+
+    if (url.pathname === "/api/admin/site-images" && req.method === "POST") {
+      requireAdmin(req);
+      const body = await readJsonBody(req);
+      const slot = String(body.slot || "").trim();
+      if (!DEFAULT_IMAGES[slot]) {
+        throw withStatus("Unknown image slot.", 400);
+      }
+
+      const content = readContent();
+      const previous = content.images?.[slot];
+      const uploaded = saveSingleUploadedImage({
+        title: body.title || DEFAULT_IMAGES[slot].title,
+        alt: body.alt || DEFAULT_IMAGES[slot].alt,
+        filename: body.filename,
+        dataUrl: body.dataUrl
+      });
+
+      content.images[slot] = uploaded;
+      writeContent(content);
+      if (previous) {
+        deleteLocalUpload(previous.image);
+      }
+
+      return sendJson(res, 201, { message: "Page image updated.", slot, image: uploaded });
     }
 
     if (url.pathname === "/api/admin/carousel" && req.method === "DELETE") {
@@ -192,6 +231,14 @@ function ensureContentShape() {
   content.about = content.about && typeof content.about === "object" ? content.about : {};
   content.events = Array.isArray(content.events) ? content.events : [];
   content.carousel = Array.isArray(content.carousel) ? content.carousel : [];
+  content.images = content.images && typeof content.images === "object" ? content.images : {};
+
+  for (const [slot, value] of Object.entries(DEFAULT_IMAGES)) {
+    if (!content.images[slot]) {
+      changed = true;
+      content.images[slot] = value;
+    }
+  }
 
   content.events = content.events.map((event) => {
     if (event.id) return event;
@@ -212,7 +259,13 @@ function ensureContentShape() {
 
 function readContent() {
   if (!fs.existsSync(CONTENT_FILE)) {
-    return { history: [], about: {}, events: [], carousel: [] };
+    return {
+      history: [],
+      about: {},
+      events: [],
+      carousel: [],
+      images: { ...DEFAULT_IMAGES }
+    };
   }
 
   return JSON.parse(fs.readFileSync(CONTENT_FILE, "utf8"));
@@ -233,6 +286,7 @@ function sanitizePublicContent(content) {
       location: event.location,
       description: event.description
     })),
+    images: content.images || { ...DEFAULT_IMAGES },
     carousel: (content.carousel || []).map((item) => ({
       id: item.id,
       title: item.title,
@@ -291,11 +345,25 @@ function readJsonBody(req) {
   });
 }
 
-function saveUploadedImage(body) {
-  const { title, caption, filename, dataUrl } = body || {};
+function normalizeCarouselUpload(body) {
+  const uploads = Array.isArray(body.images) && body.images.length ? body.images : [body];
+  return uploads.map((item, index) =>
+    saveSingleUploadedImage({
+      title: item.title || filenameStem(item.filename) || `Gallery image ${index + 1}`,
+      caption: item.caption || `Uploaded gallery image ${index + 1}.`,
+      alt: item.alt,
+      filename: item.filename,
+      dataUrl: item.dataUrl,
+      includeId: true
+    })
+  );
+}
 
-  if (!title || !caption || !filename || !dataUrl) {
-    throw withStatus("Title, caption, filename, and image data are required.", 400);
+function saveSingleUploadedImage(body) {
+  const { title, caption, alt, filename, dataUrl, includeId = false } = body || {};
+
+  if (!title || !filename || !dataUrl) {
+    throw withStatus("Title, filename, and image data are required.", 400);
   }
 
   const match = String(dataUrl).match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
@@ -318,14 +386,22 @@ function saveUploadedImage(body) {
   const outputName = `${Date.now()}-${slugify(title)}${extension}`;
   fs.writeFileSync(path.join(UPLOAD_DIR, outputName), Buffer.from(match[2], "base64"));
 
-  return {
-    id: createId("image"),
+  const payload = {
     title: String(title).trim(),
-    caption: String(caption).trim(),
     image: `/uploads/${outputName}`,
-    alt: `${String(title).trim()} image`,
+    alt: String(alt || `${title} image`).trim(),
     sourceFile: String(filename).trim()
   };
+
+  if (caption !== undefined) {
+    payload.caption = String(caption).trim();
+  }
+
+  if (includeId) {
+    payload.id = createId("image");
+  }
+
+  return payload;
 }
 
 function normalizeEvent(body) {
@@ -428,6 +504,13 @@ function slugify(value) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 60) || "item";
+}
+
+function filenameStem(filename) {
+  return String(filename || "")
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/[-_]+/g, " ")
+    .trim();
 }
 
 function createId(prefix) {
