@@ -68,7 +68,6 @@ function setupCarousels(items) {
     const dots = section.querySelector("[data-carousel-dots]");
     const prevButton = section.querySelector("[data-carousel-prev]");
     const nextButton = section.querySelector("[data-carousel-next]");
-    if (!title || !caption) return;
 
     let index = carouselIndex % items.length;
 
@@ -109,8 +108,13 @@ function setupCarousels(items) {
         button.classList.toggle("active", buttonIndex === index);
       });
 
-      title.textContent = items[index].title;
-      caption.textContent = items[index].caption;
+      if (title) {
+        title.textContent = items[index].title;
+      }
+
+      if (caption) {
+        caption.textContent = items[index].caption;
+      }
     };
 
     const goTo = (nextIndex) => {
