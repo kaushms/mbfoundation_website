@@ -323,7 +323,7 @@ textarea {
 .organic-frame {
   position: relative;
   min-height: 520px;
-  padding: 18px;
+  padding: 28px;
   border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
   background: linear-gradient(145deg, rgba(245, 230, 190, 0.9), rgba(250, 208, 201, 0.45));
   box-shadow: var(--shadow-neumorphic);
@@ -333,7 +333,7 @@ textarea {
 .organic-frame::before {
   content: "";
   position: absolute;
-  inset: 16px;
+  inset: 24px;
   border-radius: inherit;
   border: 1px solid rgba(255, 255, 255, 0.65);
   pointer-events: none;
@@ -342,7 +342,7 @@ textarea {
 .organic-frame > img {
   width: 100%;
   height: 100%;
-  min-height: 484px;
+  min-height: 444px;
   object-fit: cover;
   border-radius: inherit;
   filter: none;
